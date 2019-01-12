@@ -81,6 +81,10 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         printMSG("Connection exception: " + e);
     }
 
+    @Override
+    public void onGetOnlineUsers(TCPConnection tcpConnection) { }
+
+
     private synchronized void printMSG(String msg){
         SwingUtilities.invokeLater(new Runnable() {
             @Override
