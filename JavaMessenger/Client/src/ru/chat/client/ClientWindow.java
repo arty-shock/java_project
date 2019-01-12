@@ -25,28 +25,48 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
        });
     }
     private final JTextArea log = new JTextArea();
+    private final JTextArea members = new JTextArea();
+    private final JScrollPane scrollLog = new JScrollPane(log);
+    private final JScrollPane scrollMem = new JScrollPane(members);
+
     private final JTextField fieldNickname = new JTextField();
     private final JTextField fieldInput = new JTextField();
+
 
    private TCPConnection connection;
 
     private ClientWindow(){
+
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(WIDTH,HEIGHT);
         setLocationRelativeTo(null);
         setAlwaysOnTop(true);
 
+       /* log.setEditable(false); //запретить редактирование
+        log.setLineWrap(true);
+        add(log, BorderLayout.CENTER);*/
+
         log.setEditable(false); //запретить редактирование
         log.setLineWrap(true);
-        add(log, BorderLayout.CENTER);
+        add(scrollLog, BorderLayout.CENTER);
+
+        members.setEditable(false); //запретить редактирование
+        members.setLineWrap(true);
+       add(scrollMem, BorderLayout.WEST);
+
 
         fieldInput.addActionListener(this);
         add(fieldInput, BorderLayout.SOUTH);
         add(fieldNickname, BorderLayout.NORTH);
 
+
         setVisible(true);
         try {
             connection = new TCPConnection(this, IP_ADDR, PORT);
+            String connectionNum=connection.toString();
+            System.out.println(connectionNum);
+            connectionNum=connectionNum.substring(connectionNum.length()-4);
+            fieldNickname.setText("Guest"+connectionNum);
         } catch (IOException e) {
             printMSG("Connection exception: " + e);
         }
@@ -90,4 +110,5 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
             }
         });
     }
+
 }
