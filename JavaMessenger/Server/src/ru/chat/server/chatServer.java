@@ -92,12 +92,11 @@ public class chatServer implements TCPConnectionListener {
             System.out.println(members);
             connections.get(i).sendString(members);
         }
-
     }
 
     @Override
-    public synchronized void onReceiveFile(TCPConnection tcpConnection) {
-        tcpConnection.getFile("server/");
+    public synchronized void onReceiveFile(TCPConnection tcpConnection, String fileName) {
+        tcpConnection.getFile("server/", fileName);
     }
 
     @Override

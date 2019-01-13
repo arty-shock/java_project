@@ -41,7 +41,8 @@ public class TCPConnection {
                                 eventListener.onReceiveString(TCPConnection.this, message);
                             }
                         } else if (dataType == 1) {
-                            eventListener.onReceiveFile(TCPConnection.this);
+                            String title = in.readUTF();
+                            eventListener.onReceiveFile(TCPConnection.this, title);
                         } else {
                             System.out.println("Wrong way");
                         }
@@ -94,11 +95,10 @@ public class TCPConnection {
         }
     }
 
-    public synchronized void getFile(String filepath) {
+    public synchronized void getFile(String filepath, String fileName) {
         try {
             Files.createDirectories(Paths.get(filepath));
-            String title = in.readUTF();
-            FileOutputStream fos = new FileOutputStream(filepath + title);
+            FileOutputStream fos = new FileOutputStream(filepath + fileName);
             byte[] buffer = new byte[4096];
             int read = 0;
             int totalRead = 0;
