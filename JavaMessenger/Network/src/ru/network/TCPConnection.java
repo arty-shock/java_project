@@ -53,6 +53,15 @@ public class TCPConnection {
            disconnect();
        }
     }
+    public synchronized void sendMembers(String value){
+        try{
+            out.write(value + "\r\n");
+            out.flush();//принудительно передать строчку, убрать из буфера
+        } catch (IOException e){
+            eventListener.onException(TCPConnection.this, e);
+            disconnect();
+        }
+    }
     public synchronized void disconnect(){
         rxThread.interrupt();
         try {
