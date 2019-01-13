@@ -27,8 +27,10 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
     private final JTextArea log = new JTextArea();
     private final JTextArea members = new JTextArea();
+    private final JList filesArea = new JList();
     private final JScrollPane scrollLog = new JScrollPane(log);
     private final JScrollPane scrollMem = new JScrollPane(members);
+    //private final JScrollPane scrollFiles = new JScrollPane(filesArea);
     private final JFileChooser file= new JFileChooser();
     private final JTextField fieldNickname = new JTextField();
     private final JTextField fieldInput = new JTextField();
@@ -54,14 +56,33 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
 
         members.setEditable(false); //запретить редактирование
         members.setLineWrap(true);
-       add(scrollMem, BorderLayout.WEST);
+        add(scrollMem, BorderLayout.WEST);
+
+       // filesArea.setEditable(false); //запретить редактирование
+      //  filesArea.setLineWrap(true);
+        JPanel listPanel = new JPanel();
+        listPanel.add(new JScrollPane(filesArea));
+        filesArea   .setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
+        add(listPanel, BorderLayout.EAST);
+
+        JPanel south = new JPanel(new GridLayout(1,2));
+        south.add(fieldInput);
+        south.add(fileButton);
+        JPanel flow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        flow.add(south);
+        Container container = getContentPane();
+        container.add(flow, BorderLayout.SOUTH);
+
+
+
 
 
         fieldInput.addActionListener(this);
-        add(fieldInput, BorderLayout.SOUTH);
+       // add(fieldInput, BorderLayout.SOUTH);
         add(fieldNickname, BorderLayout.NORTH);
 
-        add(fileButton,BorderLayout.EAST);
+        //add(fileButton,BorderLayout.EAST);
         fileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
