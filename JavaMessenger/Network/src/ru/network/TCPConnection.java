@@ -26,7 +26,12 @@ public class TCPConnection {
                 try {
                     eventListener.onConnectionReady(TCPConnection.this);
                     while(!rxThread.isInterrupted()){
-                        eventListener.onReceiveString(TCPConnection.this, in.readLine());
+                        String message = in.readLine();
+                        if (message.contains("/online")) {
+                            eventListener.onGetOnlineUsers(TCPConnection.this);
+                        } else {
+                            eventListener.onReceiveString(TCPConnection.this, message);
+                        }
                     }
 
                 }catch (IOException e){
@@ -47,7 +52,6 @@ public class TCPConnection {
            eventListener.onException(TCPConnection.this, e);
            disconnect();
        }
-
     }
     public synchronized void disconnect(){
         rxThread.interrupt();
@@ -56,6 +60,9 @@ public class TCPConnection {
         } catch (IOException e) {
             eventListener.onException(TCPConnection.this, e);
         }
+    }
+    public synchronized void getOnlineUsers(){
+
     }
     @Override
     public String toString() {
