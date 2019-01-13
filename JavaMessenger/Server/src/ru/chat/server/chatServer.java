@@ -22,6 +22,7 @@ public class chatServer implements TCPConnectionListener {
 
     private static int Client_count = 0;//количество клиентов в чате
     private  final ArrayList<TCPConnection> connections = new ArrayList<>();//список из TCP соединений
+    private  final ArrayList<String> fileList = new ArrayList<>();//список файлов
     private final ArrayList<String> messages=new ArrayList<>();//сообщения
     private final ArrayList<TCPConnection> members=new ArrayList<>();//участники
 
@@ -85,18 +86,29 @@ public class chatServer implements TCPConnectionListener {
         final int cnt = connections.size();
         for (int i = 0; i < cnt; i++){
             connections.get(i).sendString(value);
+
             String members="/1a2b3c";
             for(int j=0;j<cnt;j++){
-                members+=connections.get(j);
+                members+=(connections.get(j));
             }
             System.out.println(members);
             connections.get(i).sendString(members);
+
+          if(fileList.size()!=0) {
+              String files = "/4d5e6f";
+              for (int j = 0; j < fileList.size(); j++) {
+                  files += (fileList.get(j) + "#");
+              }
+              System.out.println(files);
+              connections.get(i).sendString(files);
+          }
         }
     }
 
     @Override
     public synchronized void onReceiveFile(TCPConnection tcpConnection, String fileName) {
         tcpConnection.getFile("server/", fileName);
+        fileList.add(fileName);
     }
 
     @Override

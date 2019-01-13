@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -27,7 +29,6 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
     private final JTextArea log = new JTextArea();
     private final JTextArea members = new JTextArea();
-    private final JList filesArea = new JList();
     private final JScrollPane scrollLog = new JScrollPane(log);
     private final JScrollPane scrollMem = new JScrollPane(members);
     //private final JScrollPane scrollFiles = new JScrollPane(filesArea);
@@ -36,6 +37,8 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     private final JTextField fieldInput = new JTextField();
     private final JButton fileButton = new JButton("Add file");
 
+    private final DefaultListModel<String> listModel = new DefaultListModel();
+    private final JList<String> filesArea = new JList(listModel);
 
    private TCPConnection connection;
 
@@ -62,9 +65,18 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
       //  filesArea.setLineWrap(true);
         JPanel listPanel = new JPanel();
         listPanel.add(new JScrollPane(filesArea));
-        filesArea   .setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-
+        filesArea.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         add(listPanel, BorderLayout.EAST);
+        filesArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(e.getClickCount()==2){
+                    connection.sendString("/download "+filesArea.getSelectedValue());
+                    System.out.println("/download"+filesArea.getSelectedValue());
+                }
+            }
+        });
+
 
         JPanel south = new JPanel(new GridLayout(1,2));
         south.add(fieldInput);
@@ -154,7 +166,13 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
                     System.out.println(nmsg);
                     members.append(nmsg);
                     members.setCaretPosition(members.getDocument().getLength());
-                } else {
+               }else if(msg.contains("/4d5e6f")){
+                    String[] sentFiles=msg.substring(7).split("#");
+                    listModel.clear();
+                    for(int i=0;i<sentFiles.length;i++) {
+                        listModel.addElement(sentFiles[i]);
+                    }
+                }else {
                     log.append(msg + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
                 }
