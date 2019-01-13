@@ -4,20 +4,13 @@ import ru.network.TCPConnection;
 import ru.network.TCPConnectionListener;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 
 public class chatServer implements TCPConnectionListener {
 
-    private static final int port = 12000;
+    private static final int port = 8189;
 
     public static void main(String[] args){
 
@@ -28,36 +21,6 @@ public class chatServer implements TCPConnectionListener {
     private  final ArrayList<TCPConnection> connections = new ArrayList<>();//список из TCP соединений
     private final ArrayList<String> messages=new ArrayList<>();//сообщения
     private final ArrayList<TCPConnection> members=new ArrayList<>();//участники
-
-//    private  chatServer(){
-//        System.out.println("Server running...");
-//        try(ServerSocketChannel server = ServerSocketChannel.open()) {
-//            Selector selector = Selector.open();
-//            server.configureBlocking(false);
-//            server.socket().bind(new InetSocketAddress(port));
-//            server.register(selector, SelectionKey.OP_ACCEPT);
-//            while (true){
-//                selector.select();
-//                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
-//                while (iterator.hasNext()) {
-//                    SelectionKey key = iterator.next();
-//                    iterator.remove();
-//                    if (key.isAcceptable()) {
-//                        SocketChannel client = server.accept();
-//                        client.configureBlocking(false);
-//                        client.register(selector, SelectionKey.OP_READ);
-//                        try{
-//                            new TCPConnection(this, client.socket());
-//                        }catch (IOException e){
-//                            System.out.println("TCPConnection exception: " + e);
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (IOException e){
-//            throw new RuntimeException(e);
-//        }
-//    }
 
     private  chatServer(){
         System.out.println("Server running...");
@@ -130,11 +93,8 @@ public class chatServer implements TCPConnectionListener {
     }
 
     @Override
-    public synchronized void onGetOnlineUsers(TCPConnection tcpConnection) {
-        for (int i = 0; i < connections.size(); i++) {
-            tcpConnection.sendString("//online" + connections.get(i));
-
-        }
+    public synchronized void onReceiveFile(TCPConnection tcpConnection) {
+        tcpConnection.getFile("server/");
     }
 }
 

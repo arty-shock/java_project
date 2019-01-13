@@ -6,5 +6,5 @@ public interface TCPConnectionListener {
     void onReceiveString(TCPConnection tcpConnection, String value);
     void onDisconnect(TCPConnection tcpConnection);
     void onException(TCPConnection tcpConnection, Exception e);
-    void onGetOnlineUsers(TCPConnection tcpConnection);
+    void onReceiveFile(TCPConnection tcpConnection);
 }

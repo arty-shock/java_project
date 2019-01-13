@@ -7,12 +7,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 
 public class ClientWindow extends JFrame implements ActionListener, TCPConnectionListener {
 
     private static final String IP_ADDR = "localhost";
-    private static final int PORT = 12000;
+    private static final int PORT = 8189;
     private static final int WIDTH = 600;
     private static final int HEIGHT = 400;
 
@@ -67,8 +68,9 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
                     JFileChooser fileopen = new JFileChooser();
                     int ret = fileopen.showDialog(null, "Открыть файл");
                     if (ret == JFileChooser.APPROVE_OPTION) {
-                        /*File file = fileopen.getSelectedFile();
-                        label.setText(file.getName());*/
+                        File file = fileopen.getSelectedFile();
+                        connection.sendFile(file.getAbsolutePath());
+                        System.out.println(file.getAbsolutePath());
                     }
                 }
         });
@@ -76,6 +78,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         setVisible(true);
         try {
             connection = new TCPConnection(this, IP_ADDR, PORT);
+//            connection.sendFile("C:\\Users\\Артём\\Downloads\\JavaMessenger\\testfile.txt");
             String connectionNum=connection.toString();
             System.out.println(connectionNum);
             connectionNum=connectionNum.substring(connectionNum.length()-4);
@@ -115,7 +118,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
 
     @Override
-    public void onGetOnlineUsers(TCPConnection tcpConnection) {printMSG("one two");    }
+    public void onReceiveFile(TCPConnection tcpConnection) { }
 
 
     private synchronized void printMSG(String msg) {
@@ -123,7 +126,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
             @Override
             public void run() {
                 members.setText("");
-                if (msg.startsWith("/1a2b3c")) {
+                if (msg.contains("/1a2b3c")) {
                     String nmsg = msg.substring(7);
                     System.out.println(nmsg);
                     members.append(nmsg);
