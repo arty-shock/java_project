@@ -57,6 +57,7 @@ public class TCPConnection {
         });
         rxThread.start();
     }
+
     public synchronized void sendString(String value){
        try{
            out.writeInt(-1);
@@ -77,9 +78,14 @@ public class TCPConnection {
             out.writeLong(Files.size(path));
             FileInputStream fis = new FileInputStream(path.toFile());
             byte[] buffer = new byte[4096];
-
-            while (fis.read(buffer) > 0) {
-                out.write(buffer);
+            int write = 0;
+            int totalWrite = 0;
+            long remaining = Files.size(path);
+            while((write = fis.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
+                totalWrite += write;
+                remaining -= write;
+                System.out.println("read " + totalWrite + " bytes.");
+                out.write(buffer, 0, write);
             }
             fis.close();
         } catch (IOException e){
