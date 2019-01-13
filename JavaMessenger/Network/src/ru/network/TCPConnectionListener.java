@@ -7,4 +7,5 @@ public interface TCPConnectionListener {
     void onDisconnect(TCPConnection tcpConnection);
     void onException(TCPConnection tcpConnection, Exception e);
     void onReceiveFile(TCPConnection tcpConnection);
+    void onRequestFile(TCPConnection tcpConnection, String filleName);
 }

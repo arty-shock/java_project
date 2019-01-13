@@ -5,6 +5,9 @@ import ru.network.TCPConnectionListener;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 
@@ -95,6 +98,14 @@ public class chatServer implements TCPConnectionListener {
     @Override
     public synchronized void onReceiveFile(TCPConnection tcpConnection) {
         tcpConnection.getFile("server/");
+    }
+
+    @Override
+    public synchronized  void onRequestFile(TCPConnection tcpConnection, String fileName) {
+        Path path = Paths.get("server/" + fileName);
+        if (Files.exists(path)) {
+            tcpConnection.sendFile("server/" + fileName);
+        }
     }
 }
 

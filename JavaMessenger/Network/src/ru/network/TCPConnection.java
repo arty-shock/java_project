@@ -34,7 +34,12 @@ public class TCPConnection {
                         if (dataType == -1) {
                             String message = in.readUTF();
                             System.out.println("MESSAGE :" + message);
-                            eventListener.onReceiveString(TCPConnection.this, message);
+                            if (message.contains("/download ")) {
+                                eventListener.onRequestFile(TCPConnection.this, message.substring(message.indexOf("/download " ) + 10));
+                            }
+                            else {
+                                eventListener.onReceiveString(TCPConnection.this, message);
+                            }
                         } else if (dataType == 1) {
                             eventListener.onReceiveFile(TCPConnection.this);
                         } else {
@@ -76,6 +81,7 @@ public class TCPConnection {
             while (fis.read(buffer) > 0) {
                 out.write(buffer);
             }
+            fis.close();
         } catch (IOException e){
             eventListener.onException(TCPConnection.this, e);
             disconnect();
@@ -97,6 +103,7 @@ public class TCPConnection {
                 System.out.println("read " + totalRead + " bytes.");
                 fos.write(buffer, 0, read);
             }
+            fos.close();
         } catch (IOException e){
             eventListener.onException(TCPConnection.this, e);
             disconnect();

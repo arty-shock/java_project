@@ -118,7 +118,9 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
 
     @Override
-    public void onReceiveFile(TCPConnection tcpConnection) { }
+    public void onReceiveFile(TCPConnection tcpConnection) {
+        tcpConnection.getFile("client/");
+    }
 
 
     private synchronized void printMSG(String msg) {
@@ -140,5 +142,6 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         });
     }
 
-
+    @Override
+    public synchronized  void onRequestFile(TCPConnection tcpConnection, String fileName) { }
 }
