@@ -12,7 +12,7 @@ import java.io.IOException;
 public class ClientWindow extends JFrame implements ActionListener, TCPConnectionListener {
 
     private static final String IP_ADDR = "localhost";
-    private static final int PORT = 8189;
+    private static final int PORT = 12000;
     private static final int WIDTH = 600;
     private static final int HEIGHT = 400;
 
@@ -28,9 +28,10 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     private final JTextArea members = new JTextArea();
     private final JScrollPane scrollLog = new JScrollPane(log);
     private final JScrollPane scrollMem = new JScrollPane(members);
-
+    private final JFileChooser file= new JFileChooser();
     private final JTextField fieldNickname = new JTextField();
     private final JTextField fieldInput = new JTextField();
+    private final JButton fileButton = new JButton("Add file");
 
 
    private TCPConnection connection;
@@ -59,6 +60,18 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         add(fieldInput, BorderLayout.SOUTH);
         add(fieldNickname, BorderLayout.NORTH);
 
+        add(fileButton,BorderLayout.EAST);
+        fileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                    JFileChooser fileopen = new JFileChooser();
+                    int ret = fileopen.showDialog(null, "Открыть файл");
+                    if (ret == JFileChooser.APPROVE_OPTION) {
+                        /*File file = fileopen.getSelectedFile();
+                        label.setText(file.getName());*/
+                    }
+                }
+        });
 
         setVisible(true);
         try {
@@ -102,17 +115,27 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
 
     @Override
-    public void onGetOnlineUsers(TCPConnection tcpConnection) { }
+    public void onGetOnlineUsers(TCPConnection tcpConnection) {printMSG("one two");    }
 
 
-    private synchronized void printMSG(String msg){
+    private synchronized void printMSG(String msg) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                log.append(msg + "\n");
-                log.setCaretPosition(log.getDocument().getLength());
+                members.setText("");
+                if (msg.startsWith("/1a2b3c")) {
+                    String nmsg = msg.substring(7);
+                    System.out.println(nmsg);
+                    members.append(nmsg);
+                    members.setCaretPosition(members.getDocument().getLength());
+                } else {
+                    log.append(msg + "\n");
+                    log.setCaretPosition(log.getDocument().getLength());
+                }
+
             }
         });
     }
+
 
 }

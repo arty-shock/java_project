@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 public class chatServer implements TCPConnectionListener {
 
-    private static final int port = 8100;
+    private static final int port = 12000;
 
     public static void main(String[] args){
 
@@ -61,7 +61,7 @@ public class chatServer implements TCPConnectionListener {
 
     private  chatServer(){
         System.out.println("Server running...");
-        try(ServerSocket serverSocket = new ServerSocket(8189)) {
+        try(ServerSocket serverSocket = new ServerSocket(port)) {
             while (true){
                 try{
                     new TCPConnection(this, serverSocket.accept());
@@ -79,8 +79,9 @@ public class chatServer implements TCPConnectionListener {
         connections.add(tcpConnection);
         if(messages.size()!=0) {
             for(int i=0; i<messages.size();i++) {
-               tcpConnection.sendString(messages.get(i));
+                tcpConnection.sendString(messages.get(i));
                 System.out.println(messages.get(i));
+                }
             }
             System.out.println("all");
 
@@ -118,13 +119,21 @@ public class chatServer implements TCPConnectionListener {
         final int cnt = connections.size();
         for (int i = 0; i < cnt; i++){
             connections.get(i).sendString(value);
+            String members="/1a2b3c";
+            for(int j=0;j<cnt;j++){
+                members+=connections.get(j);
+            }
+            System.out.println(members);
+            connections.get(i).sendString(members);
         }
+
     }
 
     @Override
     public synchronized void onGetOnlineUsers(TCPConnection tcpConnection) {
         for (int i = 0; i < connections.size(); i++) {
-            tcpConnection.sendString("Online : " + connections.get(i));
+            tcpConnection.sendString("//online" + connections.get(i));
+
         }
     }
 }
