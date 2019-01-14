@@ -81,17 +81,7 @@ public class chatServer implements TCPConnectionListener {
     public synchronized void onReceiveFile(TCPConnection tcpConnection, String fileName) {
         tcpConnection.getFile(serverPath, fileName);
         fileList.add(fileName);
-        final int cnt = connections.size();
-        for (int i = 0; i < cnt; i++){
-            if(fileList.size()!=0) {
-                String files = "/4d5e6f";
-                for (int j = 0; j < fileList.size(); j++) {
-                    files += (fileList.get(j) + "#");
-                }
-                System.out.println(files);
-                connections.get(i).sendString(files);
-            }
-        }
+        updateFileList();
     }
 
     @Override
@@ -105,7 +95,12 @@ public class chatServer implements TCPConnectionListener {
     private void sendToAllConnections(String value){
         messages.add(value);
         if(messages.size()>100){
-            messages.remove(1);
+            if(messages.get(0).contains("/7g8h9i")){
+                String[] nvalue=messages.get(0).split("#");
+                fileList.remove(nvalue[1]);
+                updateFileList();
+            }
+            messages.remove(0);
         }
         System.out.println(value);
         int cnt = connections.size();
@@ -120,7 +115,20 @@ public class chatServer implements TCPConnectionListener {
 //            connections.get(i).sendString(members);
         }
     }
+    private void updateFileList(){
+        final int cnt = connections.size();
+        for (int i = 0; i < cnt; i++){
+            if(fileList.size()!=0) {
+                String files = "/4d5e6f";
+                for (int j = 0; j < fileList.size(); j++) {
+                    files += (fileList.get(j) + "#");
+                }
+                System.out.println(files);
+                connections.get(i).sendString(files);
+            }
+        }
 
+    }
     private void updateActiveConnections(TCPConnection tcpConnection) {
         int cnt = connections.size();
         for (int i = 0; i < cnt; i++){

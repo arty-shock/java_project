@@ -106,6 +106,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
                         File file = fileopen.getSelectedFile();
                         connection.sendFile(file.getAbsolutePath());
                         System.out.println(file.getAbsolutePath());
+                        connection.sendString(fieldNickname.getText() + " sent file #"+file.getName() +"#/7g8h9i");
                     }
                 }
         });
@@ -174,7 +175,11 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
                     for(int i=0;i<sentFiles.length;i++) {
                         listModel.addElement(sentFiles[i]);
                     }
-                }else {
+                }else if(msg.contains("/7g8h9i")){
+                    log.append(msg.replace("#","").substring(0,msg.indexOf("/7g8h9i")-2)+ "\n");
+                    log.setCaretPosition(log.getDocument().getLength());
+                }
+                else {
                     log.append(msg + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
                 }
