@@ -65,6 +65,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
        // filesArea.setEditable(false); //запретить редактирование
       //  filesArea.setLineWrap(true);
         JPanel listPanel = new JPanel();
+        listPanel.add(new JLabel("Sent files:"));
         listPanel.add(new JScrollPane(filesArea));
         filesArea.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         add(listPanel, BorderLayout.EAST);
@@ -161,7 +162,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
             @Override
             public void run() {
                 if (msg.contains("/1a2b3c")) {
-                    members.setText("");
+                    members.setText("Online:\n");
                     String[] sentFiles=msg.substring(7).split("#");
                     for(int i=0;i<sentFiles.length;i++) {
                         members.append(sentFiles[i] + "\n");
