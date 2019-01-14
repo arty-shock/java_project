@@ -20,20 +20,21 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     private static final int WIDTH = 800;
     private static final int HEIGHT = 400;
 
-    public static void main(String[] args){
-       SwingUtilities.invokeLater(new Runnable() {
-           @Override
-           public void run() {
-               new ClientWindow();
-           }
-       });
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new ClientWindow();
+            }
+        });
     }
+
     private final JTextArea log = new JTextArea();
     private final JTextArea members = new JTextArea();
     private final JScrollPane scrollLog = new JScrollPane(log);
     private final JScrollPane scrollMem = new JScrollPane(members);
     //private final JScrollPane scrollFiles = new JScrollPane(filesArea);
-    private final JFileChooser file= new JFileChooser();
+    private final JFileChooser file = new JFileChooser();
     private final JTextField fieldNickname = new JTextField();
     private final JTextField fieldInput = new JTextField();
     private final JButton fileButton = new JButton("Add file");
@@ -41,29 +42,22 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     private final DefaultListModel<String> listModel = new DefaultListModel();
     private final JList<String> filesArea = new JList(listModel);
 
-   private TCPConnection connection;
+    private TCPConnection connection;
 
-    private ClientWindow(){
+    private ClientWindow() {
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(WIDTH,HEIGHT);
+        setSize(WIDTH, HEIGHT);
         setLocationRelativeTo(null);
-        //setAlwaysOnTop(true);
 
-       /* log.setEditable(false); //запретить редактирование
-        log.setLineWrap(true);
-        add(log, BorderLayout.CENTER);*/
-
-        log.setEditable(false); //запретить редактирование
+        log.setEditable(false);
         log.setLineWrap(true);
         add(scrollLog, BorderLayout.CENTER);
 
-        members.setEditable(false); //запретить редактирование
+        members.setEditable(false);
         members.setLineWrap(true);
         add(scrollMem, BorderLayout.WEST);
 
-       // filesArea.setEditable(false); //запретить редактирование
-      //  filesArea.setLineWrap(true);
         JPanel listPanel = new JPanel();
         listPanel.add(new JLabel("Sent files:"));
         listPanel.add(new JScrollPane(filesArea));
@@ -72,15 +66,15 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         filesArea.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount()==2){
-                    connection.sendString("/download "+filesArea.getSelectedValue());
-                    System.out.println("/download"+filesArea.getSelectedValue());
+                if (e.getClickCount() == 2) {
+                    connection.sendString("/download " + filesArea.getSelectedValue());
+                    System.out.println("/download" + filesArea.getSelectedValue());
                 }
             }
         });
 
 
-        JPanel south = new JPanel(new GridLayout(1,2));
+        JPanel south = new JPanel(new GridLayout(1, 2));
         south.add(fieldInput);
         south.add(fileButton);
         JPanel flow = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -89,35 +83,28 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         container.add(flow, BorderLayout.SOUTH);
 
 
-
-
-
         fieldInput.addActionListener(this);
-       // add(fieldInput, BorderLayout.SOUTH);
         add(fieldNickname, BorderLayout.NORTH);
 
-        //add(fileButton,BorderLayout.EAST);
         fileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                    JFileChooser fileopen = new JFileChooser();
-                    int ret = fileopen.showDialog(null, "Открыть файл");
-                    if (ret == JFileChooser.APPROVE_OPTION) {
-                        File file = fileopen.getSelectedFile();
-                        connection.sendFile(file.getAbsolutePath());
-                        System.out.println(file.getAbsolutePath());
-                        connection.sendString(fieldNickname.getText() + " sent file #"+file.getName() +"#/7g8h9i");
-                    }
+                JFileChooser fileopen = new JFileChooser();
+                int ret = fileopen.showDialog(null, "Открыть файл");
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    File file = fileopen.getSelectedFile();
+                    connection.sendFile(file.getAbsolutePath());
+                    connection.sendString(fieldNickname.getText() + " sent file #" + file.getName() + "#/7g8h9i");
                 }
+            }
         });
 
         setVisible(true);
         try {
             connection = new TCPConnection(this, IP_ADDR, PORT);
-            String connectionNum=connection.toString();
-            System.out.println(connectionNum);
-            connectionNum=connectionNum.substring(connectionNum.length()-4);
-            fieldNickname.setText("Guest"+connectionNum);
+            String connectionNum = connection.toString();
+            connectionNum = connectionNum.substring(connectionNum.length() - 4);
+            fieldNickname.setText("Guest" + connectionNum);
         } catch (IOException e) {
             printMSG("Connection exception: " + e);
         }
@@ -164,22 +151,21 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
             public void run() {
                 if (msg.contains("/1a2b3c")) {
                     members.setText("Online:\n");
-                    String[] sentFiles=msg.substring(7).split("#");
-                    for(int i=0;i<sentFiles.length;i++) {
+                    String[] sentFiles = msg.substring(7).split("#");
+                    for (int i = 0; i < sentFiles.length; i++) {
                         members.append(sentFiles[i] + "\n");
                     }
                     members.setCaretPosition(members.getDocument().getLength());
-               }else if(msg.contains("/4d5e6f")){
-                    String[] sentFiles=msg.substring(7).split("#");
+                } else if (msg.contains("/4d5e6f")) {
+                    String[] sentFiles = msg.substring(7).split("#");
                     listModel.clear();
-                    for(int i=0;i<sentFiles.length;i++) {
+                    for (int i = 0; i < sentFiles.length; i++) {
                         listModel.addElement(sentFiles[i]);
                     }
-                }else if(msg.contains("/7g8h9i")){
-                    log.append(msg.replace("#","").substring(0,msg.indexOf("/7g8h9i")-2)+ "\n");
+                } else if (msg.contains("/7g8h9i")) {
+                    log.append(msg.replace("#", "").substring(0, msg.indexOf("/7g8h9i") - 2) + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
-                }
-                else {
+                } else {
                     log.append(msg + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
                 }
@@ -189,5 +175,6 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
 
     @Override
-    public synchronized  void onRequestFile(TCPConnection tcpConnection, String fileName) { }
+    public synchronized void onRequestFile(TCPConnection tcpConnection, String fileName) {
+    }
 }

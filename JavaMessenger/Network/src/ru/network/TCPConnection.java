@@ -2,7 +2,6 @@ package ru.network;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,27 +27,22 @@ public class TCPConnection {
             public void run() {
                 try {
                     eventListener.onConnectionReady(TCPConnection.this);
-                    while(!rxThread.isInterrupted()){
+                    while (!rxThread.isInterrupted()) {
                         int dataType = in.readInt();
-                        System.out.println(dataType);
                         if (dataType == -1) {
                             String message = in.readUTF();
-                            System.out.println("MESSAGE :" + message);
                             if (message.contains("/download ")) {
-                                eventListener.onRequestFile(TCPConnection.this, message.substring(message.indexOf("/download " ) + 10));
-                            }
-                            else {
+                                eventListener.onRequestFile(TCPConnection.this, message.substring(message.indexOf("/download ") + 10));
+                            } else {
                                 eventListener.onReceiveString(TCPConnection.this, message);
                             }
                         } else if (dataType == 1) {
                             String title = in.readUTF();
                             eventListener.onReceiveFile(TCPConnection.this, title);
-                        } else {
-                            System.out.println("Wrong way");
                         }
                     }
 
-                }catch (IOException e){
+                } catch (IOException e) {
                     eventListener.onException(TCPConnection.this, e);
 
                 } finally {
@@ -59,16 +53,16 @@ public class TCPConnection {
         rxThread.start();
     }
 
-    public synchronized void sendString(String value){
-       try{
-           out.writeInt(-1);
-           out.flush();
-           out.writeUTF(value);
-           out.flush();
-       } catch (IOException e){
-           eventListener.onException(TCPConnection.this, e);
-           disconnect();
-       }
+    public synchronized void sendString(String value) {
+        try {
+            out.writeInt(-1);
+            out.flush();
+            out.writeUTF(value);
+            out.flush();
+        } catch (IOException e) {
+            eventListener.onException(TCPConnection.this, e);
+            disconnect();
+        }
     }
 
     public synchronized void sendFile(String filepath) {
@@ -82,14 +76,13 @@ public class TCPConnection {
             int write = 0;
             int totalWrite = 0;
             long remaining = Files.size(path);
-            while((write = fis.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
+            while ((write = fis.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
                 totalWrite += write;
                 remaining -= write;
-                System.out.println("read " + totalWrite + " bytes.");
                 out.write(buffer, 0, write);
             }
             fis.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             eventListener.onException(TCPConnection.this, e);
             disconnect();
         }
@@ -103,20 +96,19 @@ public class TCPConnection {
             int read = 0;
             int totalRead = 0;
             long remaining = in.readLong();
-            while((read = in.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
+            while ((read = in.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
                 totalRead += read;
                 remaining -= read;
-                System.out.println("read " + totalRead + " bytes.");
                 fos.write(buffer, 0, read);
             }
             fos.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             eventListener.onException(TCPConnection.this, e);
             disconnect();
         }
     }
 
-    public synchronized void disconnect(){
+    public synchronized void disconnect() {
         rxThread.interrupt();
         try {
             socket.close();
