@@ -48,6 +48,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(WIDTH,HEIGHT);
         setLocationRelativeTo(null);
+        //setAlwaysOnTop(true);
 
        /* log.setEditable(false); //запретить редактирование
         log.setLineWrap(true);
@@ -159,11 +160,12 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                members.setText("");
                 if (msg.contains("/1a2b3c")) {
-                    String nmsg = msg.substring(7);
-                    System.out.println(nmsg);
-                    members.append(nmsg);
+                    members.setText("");
+                    String[] sentFiles=msg.substring(7).split("#");
+                    for(int i=0;i<sentFiles.length;i++) {
+                        members.append(sentFiles[i] + "\n");
+                    }
                     members.setCaretPosition(members.getDocument().getLength());
                }else if(msg.contains("/4d5e6f")){
                     String[] sentFiles=msg.substring(7).split("#");

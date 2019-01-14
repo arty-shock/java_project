@@ -126,7 +126,8 @@ public class chatServer implements TCPConnectionListener {
         for (int i = 0; i < cnt; i++){
             String members="/1a2b3c";
             for(int j=0;j<cnt;j++){
-                if (connections.get(j) != tcpConnection) members+=(connections.get(j));
+                //if (connections.get(j) != tcpConnection)
+                    members+=(connections.get(j)+"#");
             }
             System.out.println(members);
             connections.get(i).sendString(members);
