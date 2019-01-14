@@ -17,7 +17,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     private static final String IP_ADDR = "localhost";
     private static final int PORT = 8189;
     private static final String clientPath = "client/";
-    private static final int WIDTH = 600;
+    private static final int WIDTH = 800;
     private static final int HEIGHT = 400;
 
     public static void main(String[] args){
