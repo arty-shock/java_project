@@ -4,7 +4,7 @@ java -jar server.jar
 
 java -jar client.jar
 
-### How to create javadoc, jar from sources:
+### How to create jar from sources:
 
 Из корневого каталога:
 
@@ -25,6 +25,14 @@ javac -sourcepath Network/src/;Client/src/ Client/src/ru/chat/client/ClientWindo
 cd build\client
 
 jar cfe client.jar ru.chat.client.ClientWindow *
+
+### How to create jar from sources:
+
+Из корневого каталога:
+
+javadoc -sourcepath Network/src/;Client/src/ -subpackages ru -d javadoc\client
+
+javadoc -sourcepath Network/src/;Server/src/ -subpackages ru -d javadoc\server
 
 ### How to use client:
 
