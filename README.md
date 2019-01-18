@@ -22,6 +22,8 @@ mkdir build\client
 
 javac -sourcepath Network/src/;Client/src/ Client/src/ru/chat/client/ClientWindow.java -d build\client
 
+cd build\client
+
 jar cfe client.jar ru.chat.client.ClientWindow *
 
 ### How to use client:
