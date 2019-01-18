@@ -6,7 +6,23 @@ java -jar client.jar
 
 ### How to create javadoc, jar from sources:
 
-Созданы с помощью Idea
+Из корневого каталога:
+
+mkdir build\server
+
+javac -sourcepath Network/src/;Server/src/ Server/src/ru/chat/server/chatServer.java -d build\server
+
+cd build\server
+
+jar cfe server.jar ru.chat.server.chatServer *
+
+cd ..\..
+
+mkdir build\client
+
+javac -sourcepath Network/src/;Client/src/ Client/src/ru/chat/client/ClientWindow.java -d build\client
+
+jar cfe client.jar ru.chat.client.ClientWindow *
 
 ### How to use client:
 
