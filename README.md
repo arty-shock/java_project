@@ -16,7 +16,7 @@ cd build\server
 
 jar cfe server.jar ru.chat.server.chatServer *
 
-cd ..\..
+cd ..\\..
 
 mkdir build\client
 
