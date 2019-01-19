@@ -65,12 +65,13 @@ public class TCPConnection {
         }
     }
 
-    public synchronized void sendFile(String filepath) {
-        try {
-            Path path = Paths.get(filepath);
+    public synchronized void sendFile(String filepath) throws IOException {
+        Path path = Paths.get(filepath);
+        long fileSize = Files.size(path);
+        if (fileSize <= 100*1024*1024) {
             out.writeInt(1);
             out.writeUTF(path.getFileName().toString());
-            out.writeLong(Files.size(path));
+            out.writeLong(fileSize);
             FileInputStream fis = new FileInputStream(path.toFile());
             byte[] buffer = new byte[4096];
             int write = 0;
@@ -82,9 +83,8 @@ public class TCPConnection {
                 out.write(buffer, 0, write);
             }
             fis.close();
-        } catch (IOException e) {
-            eventListener.onException(TCPConnection.this, e);
-            disconnect();
+        } else {
+            throw new IOException("File should be < 100 MB");
         }
     }
 

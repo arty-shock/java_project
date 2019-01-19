@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-
 public class chatServer implements TCPConnectionListener {
 
     private static final int port = 8189;
@@ -89,7 +88,12 @@ public class chatServer implements TCPConnectionListener {
     public synchronized void onRequestFile(TCPConnection tcpConnection, String fileName) {
         Path path = Paths.get(serverPath + fileName);
         if (Files.exists(path)) {
-            tcpConnection.sendFile(serverPath + fileName);
+            try {
+                tcpConnection.sendFile(serverPath + fileName);
+            }
+            catch (IOException ioe) {
+                System.out.println(ioe.getMessage());
+            }
         }
     }
 

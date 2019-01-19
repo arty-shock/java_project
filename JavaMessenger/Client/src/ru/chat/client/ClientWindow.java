@@ -93,8 +93,13 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
                 int ret = fileopen.showDialog(null, "Открыть файл");
                 if (ret == JFileChooser.APPROVE_OPTION) {
                     File file = fileopen.getSelectedFile();
-                    connection.sendFile(file.getAbsolutePath());
-                    connection.sendString(fieldNickname.getText() + " sent file #" + file.getName() + "#/7g8h9i");
+                    try {
+                        connection.sendFile(file.getAbsolutePath());
+                        connection.sendString(fieldNickname.getText() + " sent file #" + file.getName() + "#/7g8h9i");
+                    }
+                    catch (IOException ioe) {
+                        printMSG(ioe.getMessage());
+                    }
                 }
             }
         });
