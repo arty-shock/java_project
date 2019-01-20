@@ -3,8 +3,24 @@ package ru.chat.client;
 import ru.network.TCPConnection;
 import ru.network.TCPConnectionListener;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.WindowConstants;
+import javax.swing.JScrollPane;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JButton;
+import javax.swing.ListSelectionModel;
+import javax.swing.JFileChooser;
+//import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.FlowLayout;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -13,19 +29,21 @@ import java.io.File;
 import java.io.IOException;
 
 @SuppressWarnings("ALL")
-public class ClientWindow extends JFrame implements ActionListener, TCPConnectionListener {
+public final class ClientWindow extends JFrame implements ActionListener, TCPConnectionListener {
 
     private static final String IP_ADDR = "localhost";
     private static final int PORT = 8189;
-    private static final String clientPath = "client/";
+    private static final String CLIENTPATH = "client/";
     private static final int WIDTH = 800;
     private static final int HEIGHT = 400;
-    private static final String membersKey = "/1a2b3c";
-    private static final String rfilesKey = "/4d5e6f";
-    private static final String sfilesKey = "/7g8h9i";
-    private static final String downloadKey="/download";
+    private static final int LASTCHAR = 4;
+    private static final int KEYEND = 7;
+    private static final String MEMBERSKEY = "/1a2b3c";
+    private static final String R_FILESKEY = "/4d5e6f";
+    private static final String S_FILESKEY = "/7g8h9i";
+    private static final String DOWNLOADKEY = "/download";
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -72,9 +90,9 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         add(listPanel, BorderLayout.EAST);
         filesArea.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(final MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    connection.sendString(downloadKey +" "+filesArea.getSelectedValue());
+                    connection.sendString(DOWNLOADKEY + " " + filesArea.getSelectedValue());
                 }
             }
         });
@@ -95,16 +113,15 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
 
         fileButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 JFileChooser fileopen = new JFileChooser();
                 int ret = fileopen.showDialog(null, "Открыть файл");
-                if (ret == JFileChooser.APPROVE_OPTION&&connection!=null) {
+                if (ret == JFileChooser.APPROVE_OPTION && connection != null) {
                     File file = fileopen.getSelectedFile();
                     try {
                         connection.sendFile(file.getAbsolutePath());
                         connection.sendString(fieldNickname.getText() + " sent file #" + file.getName() + "#/7g8h9i");
-                    }
-                    catch (IOException ioe) {
+                    } catch (IOException ioe) {
                         printMSG("Connection exception: " + ioe);
                     }
                 }
@@ -116,7 +133,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
             connection = new TCPConnection(this, IP_ADDR, PORT);
 
             String connectionNum = connection.toString();
-            connectionNum = connectionNum.substring(connectionNum.length() - 4);
+            connectionNum = connectionNum.substring(connectionNum.length() - LASTCHAR);
             fieldNickname.setText("Guest" + connectionNum);
         } catch (IOException e) {
             printMSG("Connection exception: " + e);
@@ -124,65 +141,67 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         String msg = fieldInput.getText();
-        if (msg.equals("")) return;
+        if (msg.equals("")) {
+            return;
+        }
         fieldInput.setText(null);
-        if(connection!=null){
+        if (connection != null) {
             connection.sendString(fieldNickname.getText() + ": " + msg);
-        }else{
+        } else {
             printMSG("You can't send messages because server is off");
         }
     }
 
 
     @Override
-    public void onConnectionReady(TCPConnection tcpConnection) {
+    public void onConnectionReady(final TCPConnection tcpConnection) {
         printMSG("Connection ready...");
     }
 
     @Override
-    public void onReceiveString(String value) {
+    public void onReceiveString(final String value) {
         printMSG(value);
     }
 
     @Override
-    public void onDisconnect(TCPConnection tcpConnection) {
+    public void onDisconnect(final TCPConnection tcpConnection) {
         printMSG("Connection closed...");
     }
 
     @Override
-    public void onException(Exception e) {
+    public void onException(final Exception e) {
         printMSG("Connection exception: " + e);
     }
 
     @Override
-    public void onReceiveFile(TCPConnection tcpConnection, String fileName) {
-        tcpConnection.getFile(clientPath, fileName);
+    public void onReceiveFile(final TCPConnection tcpConnection, final String fileName) {
+        tcpConnection.getFile(CLIENTPATH, fileName);
     }
 
 
-    private synchronized void printMSG(String msg) {
+    private synchronized void printMSG(final String msg) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (msg.contains(membersKey)) {
+                if (msg.contains(MEMBERSKEY)) {
                     members.setText("Online:\n");
-                    String[] membersList = msg.substring(7).split("#");
+                    String[] membersList = msg.substring(KEYEND).split("#");
                     for (int i = 0; i < membersList.length; i++) {
                         members.append(membersList[i] + "\n");
                     }
                     members.setCaretPosition(members.getDocument().getLength());
-                } else if (msg.contains(rfilesKey)) {
-                    String[] sentFiles = msg.substring(7).split("#");
+                } else if (msg.contains(R_FILESKEY)) {
+                    String[] sentFiles = msg.substring(KEYEND).split("#");
                     listModel.clear();
                     for (int i = 0; i < sentFiles.length; i++) {
                         listModel.addElement(sentFiles[i]);
                     }
-                } else if (msg.contains(sfilesKey)) {
+                } else if (msg.contains(S_FILESKEY)) {
                     log.append(msg.replace("#", "").substring(0, msg.indexOf("/7g8h9i") - 2) + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
-                }else{
+                } else {
                     log.append(msg + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
                 }
@@ -194,6 +213,6 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
 
     @Override
-    public synchronized void onRequestFile(TCPConnection tcpConnection, String fileName) {
+    public synchronized void onRequestFile(final TCPConnection tcpConnection, final String fileName) {
     }
 }

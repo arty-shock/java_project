@@ -1,6 +1,13 @@
 package ru.network;
 
-import java.io.*;
+//import java.io.*;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,15 +20,17 @@ public class TCPConnection {
     private final TCPConnectionListener eventListener;
     private final DataInputStream in;
     private final DataOutputStream out;
-    private static final  String downloadKey="/download";
+    private static final  String DOWNLOADKEY = "/download";
+    private static final  int BUFFERSIZE = 4096;
+    private static final  int MAXFILESIZE = 10 * 1024 * 1024;
 
-    public TCPConnection(TCPConnectionListener eventListener, String ipAddr, int port) throws IOException {
-        this(eventListener, new Socket(ipAddr, port));
+    public TCPConnection(final TCPConnectionListener eListener, final String ipAddr, final int port) throws IOException {
+        this(eListener, new Socket(ipAddr, port));
     }
 
-    public TCPConnection(TCPConnectionListener eventListener, Socket socket) throws IOException {
-        this.eventListener = eventListener;
-        this.socket = socket;
+    public TCPConnection(final TCPConnectionListener eListener, final Socket sct) throws IOException {
+        this.eventListener = eListener;
+        this.socket = sct;
         in = new DataInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
         rxThread = new Thread(new Runnable() {
@@ -33,8 +42,8 @@ public class TCPConnection {
                         int dataType = in.readInt();
                         if (dataType == -1) {
                             String message = in.readUTF();
-                            if (message.contains(downloadKey)) {
-                                eventListener.onRequestFile(TCPConnection.this, message.substring(message.indexOf("/download ") + 10));
+                            if (message.contains(DOWNLOADKEY)) {
+                                eventListener.onRequestFile(TCPConnection.this, message.substring(message.indexOf(DOWNLOADKEY) + DOWNLOADKEY.length() + 1));
                             } else {
                                 eventListener.onReceiveString(message);
                             }
@@ -55,7 +64,7 @@ public class TCPConnection {
         rxThread.start();
     }
 
-    public synchronized void sendString(String value) {
+    public final synchronized void sendString(final String value) {
         try {
             out.writeInt(-1);
             out.flush();
@@ -67,40 +76,41 @@ public class TCPConnection {
         }
     }
 
-    public synchronized void sendFile(String filepath) throws IOException {
+    public final synchronized void sendFile(final String filepath) throws IOException {
         Path path = Paths.get(filepath);
         long fileSize = Files.size(path);
-        if (fileSize <= 100 * 1024 * 1024) {
+        if (fileSize <= MAXFILESIZE) {
             out.writeInt(1);
             out.writeUTF(path.getFileName().toString());
             out.writeLong(fileSize);
             FileInputStream fis = new FileInputStream(path.toFile());
             long remaining = Files.size(path);
-            loadFile(fis,out,remaining);
+            loadFile(fis, out, remaining);
             fis.close();
         } else {
             throw new IOException("File should be < 100 MB");
         }
     }
-    public synchronized void getFile(String filepath, String fileName) {
+    public final synchronized void getFile(final String filepath, final String fileName) {
         try {
             Files.createDirectories(Paths.get(filepath));
             FileOutputStream fos = new FileOutputStream(filepath + fileName);
             long remaining = in.readLong();
-            loadFile(in,fos,remaining);
+            loadFile(in, fos, remaining);
             fos.close();
         } catch (IOException e) {
             eventListener.onException(e);
             disconnect();
         }
     }
-    public synchronized void loadFile(InputStream fin, OutputStream fout, long remaining) throws IOException{
-        byte[] buffer = new byte[4096];
+    public final synchronized void loadFile(final InputStream fin, final OutputStream fout, final long remaining) throws IOException {
+        byte[] buffer = new byte[BUFFERSIZE];
         int read;
         int totalRead = 0;
-        while ((read = fin.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
+        long left = remaining;
+        while ((read = fin.read(buffer, 0, (int) Math.min(buffer.length, left))) > 0) {
             totalRead += read;
-            remaining -= read;
+            left -= read;
             fout.write(buffer, 0, read);
         }
     }
@@ -115,8 +125,7 @@ public class TCPConnection {
 
 
     @Override
-    public String toString() {
-
+     public final String toString() {
         return "TCPConnection" + socket.getInetAddress() + ": " + socket.getPort();
     }
 }
