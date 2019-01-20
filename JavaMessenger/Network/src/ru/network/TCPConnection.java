@@ -6,12 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@SuppressWarnings("ALL")
 public class TCPConnection {
     private final Socket socket;
     private final Thread rxThread;
     private final TCPConnectionListener eventListener;
     private final DataInputStream in;
     private final DataOutputStream out;
+    private static final  String downloadKey="/download";
 
     public TCPConnection(TCPConnectionListener eventListener, String ipAddr, int port) throws IOException {
         this(eventListener, new Socket(ipAddr, port));
@@ -31,10 +33,10 @@ public class TCPConnection {
                         int dataType = in.readInt();
                         if (dataType == -1) {
                             String message = in.readUTF();
-                            if (message.contains("/download ")) {
+                            if (message.contains(downloadKey)) {
                                 eventListener.onRequestFile(TCPConnection.this, message.substring(message.indexOf("/download ") + 10));
                             } else {
-                                eventListener.onReceiveString(TCPConnection.this, message);
+                                eventListener.onReceiveString(message);
                             }
                         } else if (dataType == 1) {
                             String title = in.readUTF();
@@ -43,7 +45,7 @@ public class TCPConnection {
                     }
 
                 } catch (IOException e) {
-                    eventListener.onException(TCPConnection.this, e);
+                    eventListener.onException(e);
 
                 } finally {
                     eventListener.onDisconnect(TCPConnection.this);
@@ -60,7 +62,7 @@ public class TCPConnection {
             out.writeUTF(value);
             out.flush();
         } catch (IOException e) {
-            eventListener.onException(TCPConnection.this, e);
+            eventListener.onException(e);
             disconnect();
         }
     }
@@ -68,54 +70,49 @@ public class TCPConnection {
     public synchronized void sendFile(String filepath) throws IOException {
         Path path = Paths.get(filepath);
         long fileSize = Files.size(path);
-        if (fileSize <= 100*1024*1024) {
+        if (fileSize <= 100 * 1024 * 1024) {
             out.writeInt(1);
             out.writeUTF(path.getFileName().toString());
             out.writeLong(fileSize);
             FileInputStream fis = new FileInputStream(path.toFile());
-            byte[] buffer = new byte[4096];
-            int write = 0;
-            int totalWrite = 0;
             long remaining = Files.size(path);
-            while ((write = fis.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
-                totalWrite += write;
-                remaining -= write;
-                out.write(buffer, 0, write);
-            }
+            loadFile(fis,out,remaining);
             fis.close();
         } else {
             throw new IOException("File should be < 100 MB");
         }
     }
-
     public synchronized void getFile(String filepath, String fileName) {
         try {
             Files.createDirectories(Paths.get(filepath));
             FileOutputStream fos = new FileOutputStream(filepath + fileName);
-            byte[] buffer = new byte[4096];
-            int read = 0;
-            int totalRead = 0;
             long remaining = in.readLong();
-            while ((read = in.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
-                totalRead += read;
-                remaining -= read;
-                fos.write(buffer, 0, read);
-            }
+            loadFile(in,fos,remaining);
             fos.close();
         } catch (IOException e) {
-            eventListener.onException(TCPConnection.this, e);
+            eventListener.onException(e);
             disconnect();
         }
     }
-
-    public synchronized void disconnect() {
+    public synchronized void loadFile(InputStream fin, OutputStream fout, long remaining) throws IOException{
+        byte[] buffer = new byte[4096];
+        int read;
+        int totalRead = 0;
+        while ((read = fin.read(buffer, 0, (int) Math.min(buffer.length, remaining))) > 0) {
+            totalRead += read;
+            remaining -= read;
+            fout.write(buffer, 0, read);
+        }
+    }
+    private synchronized void disconnect() {
         rxThread.interrupt();
         try {
             socket.close();
         } catch (IOException e) {
-            eventListener.onException(TCPConnection.this, e);
+            eventListener.onException(e);
         }
     }
+
 
     @Override
     public String toString() {

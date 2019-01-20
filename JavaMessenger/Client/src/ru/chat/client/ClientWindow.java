@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 
+@SuppressWarnings("ALL")
 public class ClientWindow extends JFrame implements ActionListener, TCPConnectionListener {
 
     private static final String IP_ADDR = "localhost";
@@ -19,6 +20,10 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     private static final String clientPath = "client/";
     private static final int WIDTH = 800;
     private static final int HEIGHT = 400;
+    private static final String membersKey = "/1a2b3c";
+    private static final String rfilesKey = "/4d5e6f";
+    private static final String sfilesKey = "/7g8h9i";
+    private static final String downloadKey="/download";
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -31,15 +36,15 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
 
     private final JTextArea log = new JTextArea();
     private final JTextArea members = new JTextArea();
-    private final JScrollPane scrollLog = new JScrollPane(log);
-    private final JScrollPane scrollMem = new JScrollPane(members);
-    //private final JScrollPane scrollFiles = new JScrollPane(filesArea);
-    private final JFileChooser file = new JFileChooser();
+// --Commented out by Inspection START (20.01.2019 21:12):
+//    //private final JScrollPane scrollFiles = new JScrollPane(filesArea);
+//    private final JFileChooser file = new JFileChooser();
+// --Commented out by Inspection STOP (20.01.2019 21:12)
     private final JTextField fieldNickname = new JTextField();
     private final JTextField fieldInput = new JTextField();
-    private final JButton fileButton = new JButton("Add file");
 
     private final DefaultListModel<String> listModel = new DefaultListModel();
+    @SuppressWarnings("unchecked")
     private final JList<String> filesArea = new JList(listModel);
 
     private TCPConnection connection;
@@ -52,10 +57,12 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
 
         log.setEditable(false);
         log.setLineWrap(true);
+        JScrollPane scrollLog = new JScrollPane(log);
         add(scrollLog, BorderLayout.CENTER);
 
         members.setEditable(false);
         members.setLineWrap(true);
+        JScrollPane scrollMem = new JScrollPane(members);
         add(scrollMem, BorderLayout.WEST);
 
         JPanel listPanel = new JPanel();
@@ -67,8 +74,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    connection.sendString("/download " + filesArea.getSelectedValue());
-                    System.out.println("/download" + filesArea.getSelectedValue());
+                    connection.sendString(downloadKey +" "+filesArea.getSelectedValue());
                 }
             }
         });
@@ -76,6 +82,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
 
         JPanel south = new JPanel(new GridLayout(1, 2));
         south.add(fieldInput);
+        JButton fileButton = new JButton("Add file");
         south.add(fileButton);
         JPanel flow = new JPanel(new FlowLayout(FlowLayout.LEFT));
         flow.add(south);
@@ -135,7 +142,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
 
     @Override
-    public void onReceiveString(TCPConnection tcpConnection, String value) {
+    public void onReceiveString(String value) {
         printMSG(value);
     }
 
@@ -145,7 +152,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
     }
 
     @Override
-    public void onException(TCPConnection tcpConnection, Exception e) {
+    public void onException(Exception e) {
         printMSG("Connection exception: " + e);
     }
 
@@ -159,20 +166,20 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (msg.contains("/1a2b3c")) {
+                if (msg.contains(membersKey)) {
                     members.setText("Online:\n");
-                    String[] sentFiles = msg.substring(7).split("#");
-                    for (int i = 0; i < sentFiles.length; i++) {
-                        members.append(sentFiles[i] + "\n");
+                    String[] membersList = msg.substring(7).split("#");
+                    for (int i = 0; i < membersList.length; i++) {
+                        members.append(membersList[i] + "\n");
                     }
                     members.setCaretPosition(members.getDocument().getLength());
-                } else if (msg.contains("/4d5e6f")) {
+                } else if (msg.contains(rfilesKey)) {
                     String[] sentFiles = msg.substring(7).split("#");
                     listModel.clear();
                     for (int i = 0; i < sentFiles.length; i++) {
                         listModel.addElement(sentFiles[i]);
                     }
-                } else if (msg.contains("/7g8h9i")) {
+                } else if (msg.contains(sfilesKey)) {
                     log.append(msg.replace("#", "").substring(0, msg.indexOf("/7g8h9i") - 2) + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
                 }else{

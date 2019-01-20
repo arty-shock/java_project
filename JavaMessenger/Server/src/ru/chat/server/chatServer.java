@@ -24,6 +24,9 @@ public class chatServer implements TCPConnectionListener {
     private final ArrayList<String> fileList = new ArrayList<>();//список файлов
     private final ArrayList<String> messages = new ArrayList<>();//сообщения
 
+    private static final String membersKey = "/1a2b3c";
+    private static final String rfilesKey = "/4d5e6f";
+    private static final String sfilesKey = "/7g8h9i";
     private chatServer() {
         System.out.println("Server running...");
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -43,24 +46,18 @@ public class chatServer implements TCPConnectionListener {
     public synchronized void onConnectionReady(TCPConnection tcpConnection) {
         connections.add(tcpConnection);
         if (messages.size() != 0) {
-            for (int i = 0; i < messages.size(); i++) {
-                tcpConnection.sendString(messages.get(i));
+            for (String message : messages) {
+                tcpConnection.sendString(message);
             }
         }
         sendToAllConnections("Client connected " + tcpConnection);
         System.out.println("Client connected " + tcpConnection);
         updateActiveConnections();
-        if (fileList.size() != 0) {
-            String files = "/4d5e6f";
-            for (int j = 0; j < fileList.size(); j++) {
-                files += (fileList.get(j) + "#");
-            }
-            tcpConnection.sendString(files);
-        }
+        updateFileList();
     }
 
     @Override
-    public synchronized void onReceiveString(TCPConnection tcpConnection, String value) {
+    public synchronized void onReceiveString(String value) {
         sendToAllConnections(value);
     }
 
@@ -73,7 +70,7 @@ public class chatServer implements TCPConnectionListener {
     }
 
     @Override
-    public synchronized void onException(TCPConnection tcpConnection, Exception e) {
+    public synchronized void onException(Exception e) {
         System.out.println("TCPConnection: " + e);
     }
 
@@ -100,28 +97,26 @@ public class chatServer implements TCPConnectionListener {
     private void sendToAllConnections(String value) {
         messages.add(value);
         if (messages.size() > 100) {
-            if (messages.get(0).contains("/7g8h9i")) {
+            if (messages.get(0).contains(sfilesKey)){
                 String[] nvalue = messages.get(0).split("#");
                 fileList.remove(nvalue[1]);
                 updateFileList();
             }
             messages.remove(0);
         }
-        int cnt = connections.size();
-        for (int i = 0; i < cnt; i++) {
-            connections.get(i).sendString(value);
+        for (TCPConnection connection : connections) {
+            connection.sendString(value);
         }
     }
 
     private void updateFileList() {
-        final int cnt = connections.size();
-        for (int i = 0; i < cnt; i++) {
+        for (TCPConnection connection : connections) {
             if (fileList.size() != 0) {
-                String files = "/4d5e6f";
-                for (int j = 0; j < fileList.size(); j++) {
-                    files += (fileList.get(j) + "#");
+                StringBuilder files = new StringBuilder(rfilesKey);
+                for (String s : fileList) {
+                    files.append(s).append("#");
                 }
-                connections.get(i).sendString(files);
+                connection.sendString(files.toString());
             }
         }
 
@@ -130,11 +125,11 @@ public class chatServer implements TCPConnectionListener {
     private void updateActiveConnections() {
         int cnt = connections.size();
         for (int i = 0; i < cnt; i++) {
-            String members = "/1a2b3c";
-            for (int j = 0; j < cnt; j++) {
-                members += (connections.get(j) + "#");
+            StringBuilder members = new StringBuilder(membersKey);
+            for (TCPConnection connection : connections) {
+                members.append(connection).append("#");
             }
-            connections.get(i).sendString(members);
+            connections.get(i).sendString(members.toString());
         }
     }
 }
