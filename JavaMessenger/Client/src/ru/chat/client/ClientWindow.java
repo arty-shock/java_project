@@ -91,14 +91,14 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileopen = new JFileChooser();
                 int ret = fileopen.showDialog(null, "Открыть файл");
-                if (ret == JFileChooser.APPROVE_OPTION) {
+                if (ret == JFileChooser.APPROVE_OPTION&&connection!=null) {
                     File file = fileopen.getSelectedFile();
                     try {
                         connection.sendFile(file.getAbsolutePath());
                         connection.sendString(fieldNickname.getText() + " sent file #" + file.getName() + "#/7g8h9i");
                     }
                     catch (IOException ioe) {
-                        printMSG(ioe.getMessage());
+                        printMSG("Connection exception: " + ioe);
                     }
                 }
             }
@@ -107,6 +107,7 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         setVisible(true);
         try {
             connection = new TCPConnection(this, IP_ADDR, PORT);
+
             String connectionNum = connection.toString();
             connectionNum = connectionNum.substring(connectionNum.length() - 4);
             fieldNickname.setText("Guest" + connectionNum);
@@ -120,7 +121,11 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
         String msg = fieldInput.getText();
         if (msg.equals("")) return;
         fieldInput.setText(null);
-        connection.sendString(fieldNickname.getText() + ": " + msg);
+        if(connection!=null){
+            connection.sendString(fieldNickname.getText() + ": " + msg);
+        }else{
+            printMSG("You can't send messages because server is off");
+        }
     }
 
 
@@ -170,10 +175,12 @@ public class ClientWindow extends JFrame implements ActionListener, TCPConnectio
                 } else if (msg.contains("/7g8h9i")) {
                     log.append(msg.replace("#", "").substring(0, msg.indexOf("/7g8h9i") - 2) + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
-                } else {
+                }else{
                     log.append(msg + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
                 }
+
+
 
             }
         });
