@@ -1,3 +1,4 @@
+
 package ru.chat.client;
 
 import ru.network.TCPConnection;
@@ -28,45 +29,109 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 
-@SuppressWarnings("ALL")
+/**
+ * Client window class.
+ */
 public final class ClientWindow extends JFrame implements ActionListener, TCPConnectionListener {
 
+    /**
+     * Server ip address.
+     */
     private static final String IP_ADDR = "localhost";
+    /**
+     * Server port.
+     */
     private static final int PORT = 8189;
+    /**
+     * Path for shared files.
+     */
     private static final String CLIENTPATH = "client/";
+    /**
+     * Client window width.
+     */
     private static final int WIDTH = 800;
+    /**
+     * Client window height.
+     */
     private static final int HEIGHT = 400;
+    /**
+     * Indent for Client name.
+     */
     private static final int LASTCHAR = 4;
+    /**
+     * Indent for key-words.
+     */
     private static final int KEYEND = 7;
+    /**
+     * Message key for connected members.
+     */
     private static final String MEMBERSKEY = "/1a2b3c";
+    /**
+     * Message key for file-list.
+     */
     private static final String R_FILESKEY = "/4d5e6f";
+    /**
+     * Message key for sent file.
+     */
     private static final String S_FILESKEY = "/7g8h9i";
+    /**
+     * Message key for file downloading.
+     */
     private static final String DOWNLOADKEY = "/download";
 
+    /**
+     * Main function.
+     * @param args
+     * Param.
+     */
     public static void main(final String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
+            /**
+             * Run client window.
+             */
             public void run() {
                 new ClientWindow();
             }
         });
     }
 
+    /**
+     * Chat text area.
+     */
     private final JTextArea log = new JTextArea();
+    /**
+     * Connected clients text area.
+     */
     private final JTextArea members = new JTextArea();
 // --Commented out by Inspection START (20.01.2019 21:12):
 //    //private final JScrollPane scrollFiles = new JScrollPane(filesArea);
 //    private final JFileChooser file = new JFileChooser();
 // --Commented out by Inspection STOP (20.01.2019 21:12)
+    /**
+     * Field for client name.
+     */
     private final JTextField fieldNickname = new JTextField();
+    /**
+     * Field for message input.
+     */
     private final JTextField fieldInput = new JTextField();
-
+    /**
+     * Model for shared files.
+     */
     private final DefaultListModel<String> listModel = new DefaultListModel();
-    @SuppressWarnings("unchecked")
+    /**
+     * Area for shared files.
+     */
     private final JList<String> filesArea = new JList(listModel);
-
+    /**
+     * Server connection.
+     */
     private TCPConnection connection;
 
+    /**
+     * ClientWindow constructor.
+     */
     private ClientWindow() {
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -180,7 +245,11 @@ public final class ClientWindow extends JFrame implements ActionListener, TCPCon
         tcpConnection.getFile(CLIENTPATH, fileName);
     }
 
-
+    /**
+     * Function for message printing on chat text area.
+     * @param msg
+     * Text message
+     */
     private synchronized void printMSG(final String msg) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -199,7 +268,7 @@ public final class ClientWindow extends JFrame implements ActionListener, TCPCon
                         listModel.addElement(sentFiles[i]);
                     }
                 } else if (msg.contains(S_FILESKEY)) {
-                    log.append(msg.replace("#", "").substring(0, msg.indexOf("/7g8h9i") - 2) + "\n");
+                    log.append(msg.replace("#", "").substring(0, msg.indexOf(S_FILESKEY) - 2) + "\n");
                     log.setCaretPosition(log.getDocument().getLength());
                 } else {
                     log.append(msg + "\n");

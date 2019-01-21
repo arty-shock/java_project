@@ -9,24 +9,60 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+/**
+ * Chat server class.
+ */
  public final class  ChatServer implements TCPConnectionListener {
-
+    /**
+     * Server port.
+     */
     private static final int PORT = 8189;
+    /**
+     *  Path for shared files.
+     */
     private static final String SERVERPATH = "server/";
 
+    /**
+     * Main function.
+     * @param args
+     * Param.
+     */
     public static void main(final String[] args) {
-
         new ChatServer();
     }
 
+    /**
+     * Current connections.
+     */
     private final ArrayList<TCPConnection> connections = new ArrayList<>(); //список из TCP соединений
+    /**
+     * List of shared files.
+     */
     private final ArrayList<String> fileList = new ArrayList<>(); //список файлов
+    /**
+     * Message history.
+     */
     private final ArrayList<String> messages = new ArrayList<>(); //сообщения
-
+    /**
+     * Message key for connected members.
+     */
     private static final String MEMBERSKEY = "/1a2b3c";
+    /**
+     * Message key for file-list.
+     */
     private static final String R_FILESKEY = "/4d5e6f";
+    /**
+     * Message key for sent file.
+     */
     private static final String S_FILESKEY = "/7g8h9i";
+    /**
+     * Limit in message history.
+     */
     private static final int MESSAGELIMIT = 100;
+
+    /**
+     * Chat server constructor.
+     */
     private ChatServer() {
         System.out.println("Server running...");
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
@@ -92,6 +128,12 @@ import java.util.ArrayList;
             }
         }
     }
+
+    /**
+     * Function for message sending to all active connections.
+     * @param value
+     * Text message.
+     */
     private void sendToAllConnections(final String value) {
         messages.add(value);
         if (messages.size() > MESSAGELIMIT) {
@@ -107,6 +149,9 @@ import java.util.ArrayList;
         }
     }
 
+    /**
+     * Function for shared files list update.
+     */
     private void updateFileList() {
         for (TCPConnection connection : connections) {
             if (fileList.size() != 0) {
@@ -120,6 +165,9 @@ import java.util.ArrayList;
 
     }
 
+    /**
+     * Function for active connections list update.
+     */
     private void updateActiveConnections() {
         int cnt = connections.size();
         for (int i = 0; i < cnt; i++) {

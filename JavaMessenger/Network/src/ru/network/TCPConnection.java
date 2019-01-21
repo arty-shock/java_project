@@ -13,21 +13,67 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@SuppressWarnings("ALL")
+/**
+ * TCPConnection class.
+ */
 public class TCPConnection {
+    /**
+     * Socket.
+     */
     private final Socket socket;
+    /**
+     * Thread.
+     */
     private final Thread rxThread;
+    /**
+     * Event listener.
+     */
     private final TCPConnectionListener eventListener;
+    /**
+     * Input stream.
+     */
     private final DataInputStream in;
+    /**
+     * Output stream.
+     */
     private final DataOutputStream out;
+    /**
+     * Message key for file downloading.
+     */
     private static final  String DOWNLOADKEY = "/download";
+    /**
+     * Buffer size for file loading.
+     */
     private static final  int BUFFERSIZE = 4096;
+    /**
+     * Maximum file size = 100mb.
+     */
     private static final  int MAXFILESIZE = 10 * 1024 * 1024;
 
+    /**
+     * TCPConnection constructor.
+     * @param eListener
+     * Event listener.
+     * @param ipAddr
+     * IP Address.
+     * @param port
+     * Port.
+     * @throws IOException
+     * Exception.
+     */
     public TCPConnection(final TCPConnectionListener eListener, final String ipAddr, final int port) throws IOException {
         this(eListener, new Socket(ipAddr, port));
     }
 
+    /**
+     * TCPConnection constructor.
+     * @param eListener
+     * Event listener.
+     * @param sct
+     * Socket.
+     * @throws IOException
+     * Exception.
+     */
     public TCPConnection(final TCPConnectionListener eListener, final Socket sct) throws IOException {
         this.eventListener = eListener;
         this.socket = sct;
@@ -64,6 +110,11 @@ public class TCPConnection {
         rxThread.start();
     }
 
+    /**
+     * Function for message sending from client to server.
+     * @param value
+     * Text message.
+     */
     public final synchronized void sendString(final String value) {
         try {
             out.writeInt(-1);
@@ -75,7 +126,13 @@ public class TCPConnection {
             disconnect();
         }
     }
-
+    /**
+     *  Function for file sending from client to server.
+     * @param filepath
+     * Shared file path.
+     * @throws IOException
+     * Exception.
+     */
     public final synchronized void sendFile(final String filepath) throws IOException {
         Path path = Paths.get(filepath);
         long fileSize = Files.size(path);
@@ -91,6 +148,14 @@ public class TCPConnection {
             throw new IOException("File should be < 100 MB");
         }
     }
+
+    /**
+     *  Function for file sending from server to client.
+     * @param filepath
+     * Shared file path.
+     * @param fileName
+     * Shared file name.
+     */
     public final synchronized void getFile(final String filepath, final String fileName) {
         try {
             Files.createDirectories(Paths.get(filepath));
@@ -103,6 +168,18 @@ public class TCPConnection {
             disconnect();
         }
     }
+
+    /**
+     * Function for writing from input stream to output stream.
+     * @param fin
+     * Input stream.
+     * @param fout
+     * Output stream.
+     * @param remaining
+     * File ending.
+     * @throws IOException
+     * Exception.
+     */
     public final synchronized void loadFile(final InputStream fin, final OutputStream fout, final long remaining) throws IOException {
         byte[] buffer = new byte[BUFFERSIZE];
         int read;
@@ -114,6 +191,10 @@ public class TCPConnection {
             fout.write(buffer, 0, read);
         }
     }
+
+    /**
+     * Funciton for connection closing.
+     */
     private synchronized void disconnect() {
         rxThread.interrupt();
         try {
